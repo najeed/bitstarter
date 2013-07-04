@@ -19,13 +19,20 @@ References:
    - http://en.wikipedia.org/wiki/JSON
    - https://developer.mozilla.org/en-US/docs/JSON
    - https://developer.mozilla.org/en-US/docs/JSON#JSON_in_Firefox_2
+
+ + restler
+   - https://github.com/danwrong/restler
+
 */
 
 var fs = require('fs');
 var program = require('commander');
 var cheerio = require('cheerio');
+var rest = require('restler');
 var HTMLFILE_DEFAULT = "index.html";
 var CHECKSFILE_DEFAULT = "checks.json";
+var URL_DEFAULT = "http://aqueous-earth-9813.herokuapp.com";
+var DUMMY_HTML = "dummy.html";
 
 var assertFileExists = function(infile) {
     var instr = infile.toString();
@@ -35,6 +42,26 @@ var assertFileExists = function(infile) {
     }
     return instr;
 };
+
+var getURL = function(url) {
+    rest.get(url).on('complete',  function(result, response) {
+      if (result instanceof Error) {
+        console.error('Error: ' + util.format(response.message));
+      } else {
+        console.error("Wrote %s", DUMMY_HTML);
+        fs.writeFileSync(DUMMY_HTML, result);
+      }
+    });
+};
+
+/*var writeFile = function(result, response) {
+  if (result instanceof Error) {
+    console.error('Error: ' + util.format(response.message));
+  } else {
+    console.error("Wrote %s", DUMMY_HTML);
+    fs.writeFileSync(DUMMY_HTML, result);
+  }
+};*/
 
 var cheerioHtmlFile = function(htmlfile) {
     return cheerio.load(fs.readFileSync(htmlfile));
@@ -59,10 +86,14 @@ if(require.main == module) {
     program
         .option('-c, --checks ', 'Path to checks.json', assertFileExists, CHECKSFILE_DEFAULT)
         .option('-f, --file ', 'Path to index.html', assertFileExists, HTMLFILE_DEFAULT)
+        .option('-u, --url ', 'URL to index.html', getURL, URL_DEFAULT)
         .parse(process.argv);
-    var checkJson = checkHtmlFile(program.file, program.checks);
+    
+
+    var checkJson = checkHtmlFile(program.file || DUMMY_HTML, program.checks);
     var outJson = JSON.stringify(checkJson, null, 4);
     console.log(outJson);
+    fs.unlinkSync(DUMMY_HTML);
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
