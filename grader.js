@@ -51,10 +51,10 @@ var getURL = function(url) {
       } else {
         console.error("Wrote %s", DUMMY_HTML);
         fs.writeFileSync(DUMMY_HTML, result);
-		var checkJson = checkHtmlFile(program.file || DUMMY_HTML, program.checks);
-		var outJson = JSON.stringify(checkJson, null, 4);
-		console.log(outJson);
-		fs.unlinkSync(DUMMY_HTML);
+	var checkJson = checkHtmlFile(program.file || DUMMY_HTML, program.checks);
+	var outJson = JSON.stringify(checkJson, null, 4);
+	console.log(outJson);
+	fs.unlinkSync(DUMMY_HTML);
       }
     });
 };
@@ -84,7 +84,6 @@ if(require.main == module) {
         .option('-f, --file [file] ', 'Path to index.html', assertFileExists, HTMLFILE_DEFAULT)
         .option('-u, --url [url] ', 'URL to index.html', getURL, URL_DEFAULT)
         .parse(process.argv);
-    console.log(URL_DEFAULT);
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
