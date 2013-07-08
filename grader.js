@@ -31,6 +31,9 @@ var cheerio = require('cheerio');
 var rest = require('restler');
 var HTMLFILE_DEFAULT = "index.html";
 var CHECKSFILE_DEFAULT = "checks.json";
+var URL_DEFAULT = "http://intense-earth-7167.herokuapp.com/";
+var DUMMY_HTML = "dummy.html";
+var willPrint = false;
 
 var assertFileExists = function(infile) {
     var instr = infile.toString();
@@ -41,8 +44,21 @@ var assertFileExists = function(infile) {
     return instr;
 };
 
-var chkAndPrintJSON = function(result) {
-    var checkJson = checkHtmlFile(program.file || result, program.checks);
+var getURL = function(url) {
+    willPrint = true;
+    rest.get(url).on('complete',  function(result, response) {
+      if (result instanceof Error) {
+        console.error('Error: ' + util.format(response.message));
+      } else {
+        fs.writeFileSync(DUMMY_HTML, result);
+        chkAndPrintJSON();
+        fs.unlinkSync(DUMMY_HTML);
+      }
+    });
+};
+
+var chkAndPrintJSON = function() {
+    var checkJson = checkHtmlFile(program.file || DUMMY_HTML, program.checks);
     var outJson = JSON.stringify(checkJson, null, 4);
     console.log(outJson);
 };
@@ -70,17 +86,9 @@ if(require.main == module) {
     program
         .option('-c, --checks <file> ', 'Path to checks.json', assertFileExists, CHECKSFILE_DEFAULT)
         .option('-f, --file [file] ', 'Path to index.html', assertFileExists, HTMLFILE_DEFAULT)
-        .option('-u, --url [url] ', 'URL to index.html')
+        .option('-u, --url [url] ', 'URL to index.html', getURL, URL_DEFAULT)
         .parse(process.argv);
-    if(program.url) {
-        rest.get(program.url).on('complete',  function(result, response) {
-          if (result instanceof Error) {
-            console.error('Error: ' + util.format(response.message));
-          } else {
-            chkAndPrintJSON(result);
-          }
-        })
-    } else {
+    if(!willPrint) {
         chkAndPrintJSON();
     }
 } else {
