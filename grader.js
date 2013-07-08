@@ -44,6 +44,7 @@ var assertFileExists = function(infile) {
 };
 
 var getURL = function(url) {
+    console.log(url);
     rest.get(url).on('complete',  function(result, response) {
       if (result instanceof Error) {
         console.error('Error: ' + util.format(response.message));
@@ -79,10 +80,11 @@ var checkHtmlFile = function(htmlfile, checksfile) {
 
 if(require.main == module) {
     program
-        .option('-c, --checks ', 'Path to checks.json', assertFileExists, CHECKSFILE_DEFAULT)
-        .option('-f, --file ', 'Path to index.html', assertFileExists, HTMLFILE_DEFAULT)
-        .option('-u, --url ', 'URL to index.html', getURL, URL_DEFAULT)
+        .option('-c, --checks <file> ', 'Path to checks.json', assertFileExists, CHECKSFILE_DEFAULT)
+        .option('-f, --file [file] ', 'Path to index.html', assertFileExists, HTMLFILE_DEFAULT)
+        .option('-u, --url [url] ', 'URL to index.html', getURL, URL_DEFAULT)
         .parse(process.argv);
+    console.log(URL_DEFAULT);
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
